@@ -86,7 +86,8 @@ router.get('/loginFailure', function(req, res, next) {
 });
 
 router.get('/loginSuccess', function(req, res, next) {
-  res.send('Successfully authenticated');
+    console.log(res);
+  res.send('Successfully authenticated' + res);
 });
 
 router.get('/logout', function(req, res) {

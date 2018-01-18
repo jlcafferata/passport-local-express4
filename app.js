@@ -7,6 +7,8 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 const bluebird = require('bluebird');
 var mongoose = require('mongoose');
+var _ = require('underscore');
+var fetch = require('node-fetch');
 
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
@@ -14,11 +16,52 @@ var LocalStrategy = require('passport-local').Strategy;
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
+const url = 'http://www.mocky.io/v2/5808862710000087232b75ac';
 
+/*
+
+fetch(url)
+  .then((resp) => resp.json())
+  .then(function(data) {
+    let clients = data.results;
+    return authors.map(function(author) {
+      let li = createNode('li'),
+          img = createNode('img'),
+          span = createNode('span');
+      img.src = author.picture.medium;
+      span.innerHTML = `${author.name.first} ${author.name.last}`;
+      append(li, img);
+      append(li, span);
+      append(ul, li);
+    })
+  })
+  .catch(function(error) {
+    console.log(error);
+  }); 
+*/
 
 var app = express();
 
 passport.use(new LocalStrategy(function(username, password, done) { 
+  let data = {
+    name: username,
+    email: password
+  };
+  // The parameters we are gonna pass to the fetch function
+  let fetchData = { 
+      method: 'POST', 
+      body: data
+  };
+  
+  fetch(url, fetchData)
+    .then(function(res) {
+        done(null, res);
+       // return res.json();
+    })/*.then(function(json) {
+        console.log(json);
+        done(null, json.clients[0]);
+    })*/;
+/*
   if (username === 'foo' && password === 'bar')
   {
     done(null, { user: username });
@@ -26,22 +69,31 @@ passport.use(new LocalStrategy(function(username, password, done) {
   else
   {
     done(null, false);
-  }
+  }*/
 }));
+
+passport.serializeUser(function(user, done) {
+    done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+    done(null,user);
+});
+/*
 passport.serializeUser(function(user, done) { 
   // please read the Passport documentation on how to implement this. We're now
   // just serializing the entire 'user' object. It would be more sane to serialize
   // just the unique user-id, so you can retrieve the user object from the database
   // in .deserializeUser().
-  console.log('serialize'  + user.username);
+  console.log('serialize'  + user.name);
   done(null, user);
 });
 
 passport.deserializeUser(function(user, done) { 
   // Again, read the documentation.
-  console.log('deserialize' + user.username);
+  console.log('deserialize' + user.name);
   done(null, user);
-});
+});*/
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -62,7 +114,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 
-
+app.use(router);
 app.use('/', routes);
 
 // passport config
